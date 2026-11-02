@@ -10,6 +10,7 @@ import { InkPass, noInkFallback } from "../bridge/ink";
 import { LensBlur } from "../bridge/lensblur";
 import { GradeEffect, GRADES, GRADE_STRENGTH, gradeFor } from "../bridge/grade";
 import { VasaWorld, TOTAL, dofAt, FLASH_AT } from "./world";
+import { Captions, useWords } from "./Captions";
 
 export const VASA_FRAMES = TOTAL;
 const makeBloom = () => {
@@ -56,6 +57,8 @@ const Inner: React.FC = () => {
 const dprOverride = () => (getInputProps() as { post?: { dpr?: number } }).post?.dpr;
 export const VasaTest: React.FC = () => {
   const f = useCurrentFrame();
+  const words = useWords("vasa/words.json");
+  const showCaps = (getInputProps() as { captions?: boolean }).captions === true; // subtítulos apagados por defecto (el usuario los prefiere sin); --props={"captions":true} para activarlos
   const flash = f >= FLASH_AT && f < FLASH_AT + 4 ? [1, 0.75, 0.45, 0.2][f - FLASH_AT] : 0;
   return (
   <AbsoluteFill style={{ background: "#cfe3f2" }}>
@@ -64,6 +67,7 @@ export const VasaTest: React.FC = () => {
       <Inner />
     </ThreeCanvas>
     {flash > 0 && <AbsoluteFill style={{ background: "#ffffff", opacity: flash }} />}
+    {showCaps && words && words.length > 0 && <Captions words={words} />}
   </AbsoluteFill>
   );
 };

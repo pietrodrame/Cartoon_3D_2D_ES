@@ -18,7 +18,7 @@ El motor visual es el mismo; cambian el idioma, la voz, los efectos de sonido y 
 - **Tiempos por palabra (`words.json`):** se sacan con **VoiceStudio** (MCP `voicestudio`, herramienta `transcribe`, WhisperX), que corre en el PC del usuario en `http://localhost:3900`. Corrige a mano nombres que el transcriptor oye mal ("Elbasa" → "el Vasa"; v y b suenan igual).
 - **Carpeta de trabajo en el PC:** `C:\Users\monke\OneDrive\Documentos\HistoriaCartoon\<nombre-del-short>\` (`voice\`, `sfx\`, `out\`). No usar la carpeta "Que Pasaria Si", que es otro proyecto.
 - Los chistes son datos reales investigados. Hechos y fuentes arriba del todo en `SCRIPT.md`.
-- Sin subtítulos quemados por defecto. Si el usuario los pide, se generan desde `words.json`.
+- **Sin subtítulos** (el usuario los probó y los prefiere sin). Existe `templates/vasa/Captions.tsx` (palabra a palabra desde `public/<short>/words.json`), apagado por defecto; se activa con `--props={"captions":true}`.
 - Mezcla: voz sin tocar, música por debajo con *ducking*, efectos a -6 dB, máster a **-14 LUFS**.
 - Export final 2K vertical: 1440x2560 (`--scale 1.3333333333333333`).
 - La historia, los personajes y la voz son siempre propios. Las referencias se usan para el look, no para el contenido.
