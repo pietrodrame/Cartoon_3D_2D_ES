@@ -118,7 +118,11 @@ const steelHull = () => ctex("steelHull", 1024, 256, (g) => {
 const signBoard = (key: string, lines: string[], w: number, h: number, bg: string, fg: string, border = "#f0c445") => ctex(key, w, h, (g) => {
   g.fillStyle = bg; g.fillRect(0, 0, w, h);
   g.strokeStyle = border; g.lineWidth = h * 0.06; g.strokeRect(h * 0.05, h * 0.05, w - h * 0.1, h - h * 0.1);
-  lines.forEach((s, k) => text(g, s, w / 2, (h * (k + 0.5)) / lines.length + (lines.length > 1 ? (k ? -h * 0.04 : h * 0.04) : 0), (h * 0.62) / lines.length, fg, INK, h * 0.03));
+  lines.forEach((s, k) => {
+    let px = (h * 0.62) / lines.length;
+    g.font = `900 ${px}px ${FONT}`; const mw = g.measureText(s).width; if (mw > w * 0.84) px *= (w * 0.84) / mw; // que la palabra quepa en el cartel
+    text(g, s, w / 2, (h * (k + 0.5)) / lines.length + (lines.length > 1 ? (k ? -h * 0.04 : h * 0.04) : 0), px, fg, INK, h * 0.03);
+  });
 });
 const schoolFacade = () => ctex("navalFacade", 1024, 512, (g, r) => {
   // 26 m x 13 m; 39.4 px/m
@@ -605,7 +609,7 @@ export class FrancoWorld {
       const bm = lam("boomStripe", () => ({ map: stripeTex("boomS", "#c0353a", "#f6f1e6", 10) }));
       const bg = new THREE.CylinderGeometry(0.09, 0.09, 6, 8); bg.rotateZ(Math.PI / 2); bg.translate(3, 0, 0);
       const boom = new THREE.Mesh(bg, bm); boom.castShadow = true; this.boom.add(boom); this.boom.position.set(13.8, 1.1, -34.1); this.sets[5].add(this.boom);
-      const sg = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.68), lam("signFront", () => ({ map: signBoard("sFront", ["FRONTERA"], 512, 158, "#f4ecd8", "#24345e", "#24345e"), side: THREE.DoubleSide })));
+      const sg = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.68), lam("signFront", () => ({ map: signBoard("sFront2", ["FRONTERA"], 512, 158, "#f4ecd8", "#24345e", "#24345e"), side: THREE.DoubleSide })));
       sg.position.set(19.75, 2.3, -34.95); this.sets[5].add(sg);
     }
     // ===== 6: frente ruso, nieve y abedules =====
