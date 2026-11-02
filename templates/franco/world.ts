@@ -67,7 +67,7 @@ const camLocal = (f: number): Cam => {
     case 5: return { pos: lerp3([-6, 92, 74], [-14, 62, 52], e), look: lerp3([-4, 0, -2], [-11, 0, 4], e), fov: 38, roll: 0 };
     case 6: return { pos: lerp3([1.2, 1.7, 3.5], [0.6, 1.7, -1.5], e), look: lerp3([-3, 1.9, -9], [-2.6, 2.0, -16], e), fov: 40, roll: 0 };
     case 7: return { pos: lerp3([-9, 2.2, 10], [-7.5, 2.5, 7], e), look: lerp3([5, 1.6, -14], [7, 1.8, -16], e), fov: 40, roll: 0 };
-    case 8: return { pos: lerp3([11.0, 1.8, -24.5], [12.2, 1.7, -26.6], e), look: lerp3([18.0, 1.7, -34.5], [18.0, 1.6, -34.5], e), fov: 40, roll: 0 };
+    case 8: return { pos: lerp3([11.0, 1.8, -24.5], [12.2, 1.7, -26.6], e), look: lerp3([18.8, 1.7, -34.5], [18.8, 1.6, -34.5], e), fov: 40, roll: 0 };
     case 9: return { pos: lerp3([-1, 1.8, 13], [2.5, 1.8, 12.5], e), look: lerp3([-1, 1.5, 0], [2.5, 1.5, 0], e), fov: 40, roll: 0 };
     case 10: return { pos: lerp3([-14, 2.2, 6], [-9, 2.5, 5.5], e), look: lerp3([6, 2.6, 9], [10, 3.6, 10], e), fov: 42, roll: 0 };
     case 11: return { pos: lerp3([2.3, 1.55, 2.6], [1.7, 1.45, 1.5], e), look: lerp3([-0.4, 1.2, -2.6], [-0.2, 1.15, -2.6], e), fov: 42, roll: 0 };
@@ -283,9 +283,9 @@ const mapTex = (state: 0 | 1 | 2) => ctex("iberia" + state, 2048, Math.round((20
     g.restore();
   }
   if (state === 2) {
-    const [ax, ay] = C(-5.6, 41.9), [bx, by] = C(-3.9, 38.9);
+    const [ax, ay] = C(-5.6, 41.9), [bx, by] = C(-5.0, 38.7);
     text(g, "SUBLEVADOS", ax, ay, 74, "#fff6e0", INK, 14);
-    text(g, "REPÚBLICA", bx, by, 74, "#f2f4ff", INK, 14);
+    text(g, "REPÚBLICA", bx, by, 62, "#f2f4ff", INK, 14);
   }
   const [mx, my] = C(-3.7, 40.42); g.fillStyle = INK; g.beginPath(); g.arc(mx, my, 14, 0, 7); g.fill(); g.fillStyle = "#ffffff"; g.beginPath(); g.arc(mx, my, 7, 0, 7); g.fill();
   text(g, "MADRID", mx, my + 46, 40, "#241726");
@@ -605,8 +605,8 @@ export class FrancoWorld {
       const bm = lam("boomStripe", () => ({ map: stripeTex("boomS", "#c0353a", "#f6f1e6", 10) }));
       const bg = new THREE.CylinderGeometry(0.09, 0.09, 6, 8); bg.rotateZ(Math.PI / 2); bg.translate(3, 0, 0);
       const boom = new THREE.Mesh(bg, bm); boom.castShadow = true; this.boom.add(boom); this.boom.position.set(13.8, 1.1, -34.1); this.sets[5].add(this.boom);
-      const sg = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.8), lam("signFront", () => ({ map: signBoard("sFront", ["FRONTERA"], 512, 158, "#f4ecd8", "#24345e", "#24345e"), side: THREE.DoubleSide })));
-      sg.position.set(20.2, 2.3, -34.95); this.sets[5].add(sg);
+      const sg = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.68), lam("signFront", () => ({ map: signBoard("sFront", ["FRONTERA"], 512, 158, "#f4ecd8", "#24345e", "#24345e"), side: THREE.DoubleSide })));
+      sg.position.set(19.75, 2.3, -34.95); this.sets[5].add(sg);
     }
     // ===== 6: frente ruso, nieve y abedules =====
     {
@@ -760,7 +760,7 @@ export class FrancoWorld {
       // el niño marinero en el muelle; en "marino" saluda
       const salute = t > W.marino - 0.1;
       const wave = salute ? Math.round(Math.sin(tw * 7) * 30) / 30 : undefined;
-      if (i === 1) { const s = pop(t, W.ferrol, 0.25); if (s > 0) this.card("ferrol1892", 1024, 256, (p) => { const g = p.g; g.fillStyle = "#f4ecd8"; g.fillRect(10, 10, 1004, 236); g.strokeStyle = "#b8352f"; g.lineWidth = 14; g.strokeRect(24, 24, 976, 208); text(g, "FERROL · 1892", 512, 132, 130, "#24345e"); }, X(8), 16, -38, 24 * s, 6 * s, cam); }
+      if (i === 1) { const s = pop(t, W.ferrol, 0.25); if (s > 0) this.card("ferrol1892", 1024, 256, (p) => { const g = p.g; g.fillStyle = "#f4ecd8"; g.fillRect(10, 10, 1004, 236); g.strokeStyle = "#b8352f"; g.lineWidth = 14; g.strokeRect(24, 24, 976, 208); text(g, "FERROL · 1892", 512, 132, 130, "#24345e"); }, X(4), 16, -38, 19 * s, 4.75 * s, cam); }
       if (i === 0) this.person(`kid|${wave}|${blink(0.3)}`, (p) => bodyFront(p, SAILOR_KID, { mode: "stand", expr: salute ? "grin" : "smile", wave, blink: blink(0.3), seed: SEED_F }), X(3.6), QY, -6.5, cam, 0.72);
       // gente en el muelle (vista aérea)
       for (let k = 0; k < 14; k++) {
