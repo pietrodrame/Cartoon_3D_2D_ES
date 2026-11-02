@@ -1,4 +1,4 @@
-// "El Vasa" style test (5 s): Stockholm harbour, 10 August 1628. Same look as the bridge short: two-tone world,
+// "El Vasa": preview de 10 s (gancho + flash-forward + Estocolmo): Stockholm harbour, 10 August 1628. Same look as the bridge short: two-tone world,
 // painted canvas textures, flat cartoon cards for people, ink lines, lens blur, grade. Reuses the bridge modules.
 import * as THREE from "three";
 import { LIGHTS, LOOK } from "../bridge/lights";
@@ -10,7 +10,13 @@ import { Pool, Actor, Fx } from "../bridge/cast";
 import { bodyFront, townsfolk, KID, fxContact, Expr, Outfit } from "../bridge/toon";
 
 export const FPS = 30;
-export const TOTAL = 150;
+// shots (frames at 30 fps), timed to the narration words:
+//  A hook crane over the crowd ("En 1628, Suecia construyó el barco de guerra más poderoso del mundo.")
+//  B flash-forward: she heels over and goes down ("Se hundió antes de salir del puerto.")
+//  C white flash, aerial of the harbour ("Estocolmo, 10 de agosto.")
+export const SHOT_B = 177, SHOT_C = 256, TOTAL = 318; // voz "voz españa mia": "mundo." acaba en 5.64 s, "Estocolmo" empieza en 8.74 s, "agosto." acaba en 10.32 s
+export const FLASH_AT = SHOT_C;
+export const shotOf = (f: number) => (f < SHOT_B ? 0 : f < SHOT_C ? 1 : 2);
 const smooth = (x: number) => { const u = Math.max(0, Math.min(1, x)); return u * u * (3 - 2 * u); };
 const ease = (x: number) => { const u = Math.max(0, Math.min(1, x)); return u < 0.5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2; };
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -25,15 +31,29 @@ const SHIP_YAW = THREE.MathUtils.degToRad(128); // bow away to screen-left, gild
 
 // ---------------- camera: crane up over the cheering crowd to reveal the ship ----------------
 export const camAt = (f: number) => {
-  const u = ease(f / (TOTAL - 1));
-  const pos = lerp3([-1.2, 3.1, 0.5], [1.5, 8.6, -7.5], u);
-  const look = lerp3([0.2, 3.3, -12], [0.5, 19, -100], ease(Math.min(1, f / 115)));
-  return { pos, look, fov: lerp(38, 40, u), roll: 0 };
+  const sh = shotOf(f);
+  if (sh === 0) {
+    const u = ease(f / (SHOT_B - 1));
+    const pos = lerp3([-1.2, 3.1, 0.5], [1.5, 8.6, -7.5], u);
+    const look = lerp3([0.2, 3.3, -12], [0.5, 19, -100], ease(Math.min(1, f / (SHOT_B * 0.77))));
+    return { pos, look, fov: lerp(38, 40, u), roll: 0 };
+  }
+  if (sh === 1) {
+    const u = (f - SHOT_B) / (SHOT_C - SHOT_B), e = ease(u);
+    return { pos: lerp3([16, 3.0, -50], [13, 3.4, -57], e), look: lerp3([5, 12, -102], [4, 9, -102], e), fov: 40, roll: THREE.MathUtils.degToRad(-4 * e) };
+  }
+  const u = (f - SHOT_C) / (TOTAL - SHOT_C), e = ease(u);
+  return { pos: lerp3([-10, 36, 30], [-12, 33, 24], e), look: lerp3([7, 3, -82], [3, 3, -86], e), fov: 40, roll: 0 };
 };
-/** lens blur: start on the crowd (ship soft), rack to the ship as the camera rises */
+/** lens blur: hook racks from the crowd to the ship; flash-forward soft background; aerial sharp */
 export const dofAt = (f: number): { cInf: number; focus: V3 } => {
-  const k = smooth((f - 30) / 70);
-  return { cInf: lerp(13, 6, k), focus: lerp3([0, 3.6, -6.5], [SHIP_AT[0], 12, SHIP_AT[2]], k) };
+  const sh = shotOf(f);
+  if (sh === 0) {
+    const k = smooth((f - 30) / 70);
+    return { cInf: lerp(13, 6, k), focus: lerp3([0, 3.6, -6.5], [SHIP_AT[0], 12, SHIP_AT[2]], k) };
+  }
+  if (sh === 1) return { cInf: 9, focus: [-3, 6, -104] };
+  return { cInf: 0, focus: [-8, 0, -78] };
 };
 
 // ---------------- painted textures ----------------
@@ -280,9 +300,9 @@ const WATER_COL = `
   vec3 wc = mix(mix(wNearC, wMidC, smoothstep(0.0, 0.55, wf)), wFarC, smoothstep(0.55, 1.0, wf));
   vec2 wp = vWP.xz + vec2(0.18 * wTime, 0.1 * wTime);
   vec4 mk = mix(texture2D(wNearTex, wp / 8.0), texture2D(wFarTex, wp / 40.0 + 0.37), smoothstep(25.0, 90.0, wd));
-  wc = mix(wc, wTrough, mk.g * 0.6);
-  wc = mix(wc, wCrest, mk.r * 0.2);
-  wc = mix(wc, wGlint, mk.b * (0.3 + 0.5 * wf));
+  wc = mix(wc, wTrough, mk.g * 0.35);
+  wc = mix(wc, wCrest, mk.r * 0.12);
+  wc = mix(wc, wGlint, mk.b * (0.15 + 0.25 * wf));
   diffuseColor.rgb = wc;`;
 const flatQuad = (x0: number, x1: number, z0: number, z1: number, y: number, u: number, v: number) => {
   const g = new THREE.BufferGeometry();
@@ -316,6 +336,7 @@ const CROWD: Folk[] = (() => {
   return out;
 })();
 
+const sh0 = (f: number) => shotOf(f);
 export class VasaWorld {
   root = new THREE.Group();
   private ship = new THREE.Group();
@@ -408,7 +429,7 @@ export class VasaWorld {
     this.ship.position.set(...SHIP_AT); this.ship.rotation.order = "YXZ"; this.ship.rotation.y = SHIP_YAW;
     R.add(this.ship);
     // sun: camera-relative (day preset az/el) around the average view direction of the shot
-    const L0 = LIGHTS.day, c0 = camAt(0), c1 = camAt(TOTAL - 1);
+    const L0 = LIGHTS.day, c0 = camAt(0), c1 = camAt(SHOT_B - 1);
     let fx = (c0.look[0] - c0.pos[0]) + (c1.look[0] - c1.pos[0]), fz = (c0.look[2] - c0.pos[2]) + (c1.look[2] - c1.pos[2]);
     const n = Math.hypot(fx, fz); fx /= n; fz /= n;
     const az = THREE.MathUtils.degToRad(62), el = THREE.MathUtils.degToRad(L0.el);
@@ -428,7 +449,7 @@ export class VasaWorld {
     // light rig
     this.hemi.color.set(L0.sky); this.hemi.groundColor.set(L0.ground); this.hemi.intensity = L0.hemiI;
     this.sun.color.set(L0.sunCol); this.sun.intensity = L0.sunI;
-    const focus = V(0, 6, -52), Rr = 62;
+    const focus = sh0(f) === 1 ? V(-3, 4, -100) : sh0(f) === 2 ? V(-4, 3, -50) : V(0, 6, -52), Rr = sh0(f) === 2 ? 75 : 62;
     this.sun.position.copy(focus).addScaledVector(this.sunDir, 220); this.sun.target.position.copy(focus);
     const sc = this.sun.shadow.camera;
     sc.left = -Rr; sc.right = Rr; sc.top = Rr; sc.bottom = -Rr; sc.near = 20; sc.far = 480; sc.updateProjectionMatrix();
@@ -450,11 +471,28 @@ export class VasaWorld {
     untone(wc.near, W.wNearC.value); untone(wc.mid, W.wMidC.value); untone(wc.far, W.wFarC.value);
     untone(wc.crest, W.wCrest.value); untone(wc.trough, W.wTrough.value); untone(wc.glint, W.wGlint.value);
     W.wShade.value.set(...wc.shade); W.wTime.value = t;
-    // ship: gentle swell, then the first gust heels her over and she starts to right herself
-    const gust = smooth((t - 2.9) / 1.0) * (1 - 0.35 * smooth((t - 4.2) / 0.8));
-    this.ship.rotation.z = 0.012 * Math.sin(t * 1.3);
-    this.ship.rotation.x = THREE.MathUtils.degToRad(1.2 * Math.sin(t * 1.1) + 9 * gust); // roll (positive heels her away from us)
-    this.ship.position.set(SHIP_AT[0] - t * 0.9 * 0.616, SHIP_AT[1] + 0.12 * Math.sin(t * 1.6), SHIP_AT[2] - t * 0.9 * 0.788);
+    // ship pose per shot
+    const sh = shotOf(f);
+    if (sh === 0) {
+      // gentle swell, then the first gust heels her over and she starts to right herself
+      const gust = smooth((t - 2.9) / 1.0) * (1 - 0.35 * smooth((t - 4.2) / 0.8));
+      this.ship.rotation.z = 0.012 * Math.sin(t * 1.3);
+      this.ship.rotation.x = THREE.MathUtils.degToRad(1.2 * Math.sin(t * 1.1) + 9 * gust);
+      this.ship.position.set(SHIP_AT[0] - t * 0.9 * 0.616, SHIP_AT[1] + 0.12 * Math.sin(t * 1.6), SHIP_AT[2] - t * 0.9 * 0.788);
+    } else if (sh === 1) {
+      // flash-forward: she heels further and further and settles into the harbour
+      const u = (f - SHOT_B) / (SHOT_C - SHOT_B);
+      const heel = 6 + 30 * ease(Math.min(1, u * 1.15));
+      this.ship.rotation.z = 0.02 * Math.sin(t * 1.3);
+      this.ship.rotation.x = THREE.MathUtils.degToRad(heel);
+      this.ship.position.set(-3.5, -4.2 * smooth((u - 0.25) / 0.75), -104);
+    } else {
+      // the morning of 10 August: calm, sails set, gliding out past the quay
+      const tc = (f - SHOT_C) / FPS;
+      this.ship.rotation.z = 0.01 * Math.sin(t * 1.3);
+      this.ship.rotation.x = THREE.MathUtils.degToRad(1.0 * Math.sin(t * 1.1));
+      this.ship.position.set(SHIP_AT[0] + 6 - tc * 0.9 * 0.616, 0.1 * Math.sin(t * 1.6), SHIP_AT[2] + 8 - tc * 0.9 * 0.788);
+    }
     // flags flutter (deterministic per frame)
     for (const fl of this.flags) {
       const p = fl.geo.attributes.position as THREE.BufferAttribute, a = p.array as Float32Array;

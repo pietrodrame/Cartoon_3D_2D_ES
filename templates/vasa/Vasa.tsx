@@ -9,7 +9,7 @@ import { BlendFunction, BloomEffect, ToneMappingEffect, ToneMappingMode } from "
 import { InkPass, noInkFallback } from "../bridge/ink";
 import { LensBlur } from "../bridge/lensblur";
 import { GradeEffect, GRADES, GRADE_STRENGTH, gradeFor } from "../bridge/grade";
-import { VasaWorld, TOTAL, dofAt } from "./world";
+import { VasaWorld, TOTAL, dofAt, FLASH_AT } from "./world";
 
 export const VASA_FRAMES = TOTAL;
 const makeBloom = () => {
@@ -54,11 +54,16 @@ const Inner: React.FC = () => {
 };
 
 const dprOverride = () => (getInputProps() as { post?: { dpr?: number } }).post?.dpr;
-export const VasaTest: React.FC = () => (
+export const VasaTest: React.FC = () => {
+  const f = useCurrentFrame();
+  const flash = f >= FLASH_AT && f < FLASH_AT + 4 ? [1, 0.75, 0.45, 0.2][f - FLASH_AT] : 0;
+  return (
   <AbsoluteFill style={{ background: "#cfe3f2" }}>
     <ThreeCanvas width={1080} height={1920} {...(dprOverride() ? { dpr: dprOverride() } : {})} shadows gl={{ antialias: false, stencil: false, powerPreference: "high-performance", toneMappingExposure: 1.0 }}
       camera={{ fov: 40, near: 0.2, far: 1500 }}>
       <Inner />
     </ThreeCanvas>
+    {flash > 0 && <AbsoluteFill style={{ background: "#ffffff", opacity: flash }} />}
   </AbsoluteFill>
-);
+  );
+};
