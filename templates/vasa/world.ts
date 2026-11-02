@@ -43,7 +43,7 @@ export const camAt = (f: number) => {
     return { pos: lerp3([16, 3.0, -50], [13, 3.4, -57], e), look: lerp3([5, 12, -102], [4, 9, -102], e), fov: 40, roll: THREE.MathUtils.degToRad(-4 * e) };
   }
   const u = (f - SHOT_C) / (TOTAL - SHOT_C), e = ease(u);
-  return { pos: lerp3([-10, 36, 30], [-12, 33, 24], e), look: lerp3([7, 3, -82], [3, 3, -86], e), fov: 40, roll: 0 };
+  return { pos: lerp3([-16, 48, 4], [-17, 44, -1], e), look: lerp3([9, 3, -82], [7, 3, -86], e), fov: 40, roll: 0 };
 };
 /** lens blur: hook racks from the crowd to the ship; flash-forward soft background; aerial sharp */
 export const dofAt = (f: number): { cInf: number; focus: V3 } => {
@@ -301,8 +301,8 @@ const WATER_COL = `
   vec2 wp = vWP.xz + vec2(0.18 * wTime, 0.1 * wTime);
   vec4 mk = mix(texture2D(wNearTex, wp / 8.0), texture2D(wFarTex, wp / 40.0 + 0.37), smoothstep(25.0, 90.0, wd));
   wc = mix(wc, wTrough, mk.g * 0.35);
-  wc = mix(wc, wCrest, mk.r * 0.12);
-  wc = mix(wc, wGlint, mk.b * (0.15 + 0.25 * wf));
+  wc = mix(wc, wCrest, mk.r * 0.12 * clamp(1.0 - (cameraPosition.y - 6.0) / 20.0, 0.25, 1.0));
+  wc = mix(wc, wGlint, mk.b * (0.15 + 0.25 * wf) * clamp(1.0 - (cameraPosition.y - 6.0) / 20.0, 0.15, 1.0));
   diffuseColor.rgb = wc;`;
 const flatQuad = (x0: number, x1: number, z0: number, z1: number, y: number, u: number, v: number) => {
   const g = new THREE.BufferGeometry();
@@ -464,11 +464,11 @@ export class VasaWorld {
     const e = K.sky.e.map((deg) => THREE.MathUtils.degToRad(deg));
     su.e.value.set(e[1], e[2], e[3], e[4]);
     this.sky.position.copy(cam.position);
-    untone(L0.fog, this.fog.color); this.fog.near = 60; this.fog.far = 520;
+    untone(L0.fog, this.fog.color); this.fog.near = cam.position.y > 15 ? 160 : 60; this.fog.far = cam.position.y > 15 ? 700 : 520;
     scene.fog = this.fog; scene.background = null;
     for (const m of this.clouds) m.lookAt(cam.position.x, m.position.y, cam.position.z);
     const W = this.WU, wc = K.water;
-    untone(wc.near, W.wNearC.value); untone(wc.mid, W.wMidC.value); untone(wc.far, W.wFarC.value);
+    untone(cam.position.y > 15 ? wc.mid : wc.near, W.wNearC.value); // high/aerial cameras: no washed-out turquoise untone(wc.mid, W.wMidC.value); untone(wc.far, W.wFarC.value);
     untone(wc.crest, W.wCrest.value); untone(wc.trough, W.wTrough.value); untone(wc.glint, W.wGlint.value);
     W.wShade.value.set(...wc.shade); W.wTime.value = t;
     // ship pose per shot

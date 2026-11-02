@@ -20,7 +20,7 @@ El motor visual es el mismo; cambian el idioma, la voz, los efectos de sonido y 
 - Los chistes son datos reales investigados. Hechos y fuentes arriba del todo en `SCRIPT.md`.
 - Sin subtítulos quemados por defecto. Si el usuario los pide, se generan desde `words.json`.
 - Mezcla: voz sin tocar, música por debajo con *ducking*, efectos a -6 dB, máster a **-14 LUFS**.
-- Export final 2K vertical: 1440x2560 (`--scale 1.3333`).
+- Export final 2K vertical: 1440x2560 (`--scale 1.3333333333333333`).
 - La historia, los personajes y la voz son siempre propios. Las referencias se usan para el look, no para el contenido.
 
 ## Pipeline
@@ -46,7 +46,7 @@ El motor visual es el mismo; cambian el idioma, la voz, los efectos de sonido y 
    - Mezcla con ffmpeg. En el PC del usuario hay uno dentro de VoiceStudio: `C:\Users\monke\AppData\Roaming\VoiceStudio\runtime\project\.venv\Lib\site-packages\imageio_ffmpeg\binaries\ffmpeg-win-x86_64-v7.1.exe`. Normaliza el máster a -14 LUFS (`loudnorm=I=-14:TP=-1:LRA=11`).
    - Opcional: *earshot* (github.com/Leonxlnx/earshot) para que Claude "escuche" la mezcla. Revisa su código antes de instalarlo.
 8. **Revisión de imagen fotograma a fotograma.** Haz stills (`node scripts/stills.mjs <Comp> out/<n>/x_ 0,40,80 0.5`) y hojas de contacto con ffmpeg (`select='not(mod(n\,6))',tile=9x3`). Busca texturas sin sentido, saltos (movimiento a dos fotogramas que no toca) y objetos cortados en el borde. Corrige y repite.
-9. **Render final** con `node scripts/render.mjs <Comp> out/<n>/video.mp4 1.3333` o con `npx remotion render ... --scale 1.3333`. Después une el audio con `-map 0:v:0 -map 1:a:0`. En el PC del usuario (RTX 5060) usa `REMOTION_GL=angle`. En un servidor sin GPU usa `swangle`, a unos 30 s por fotograma.
+9. **Render final** con `node scripts/render.mjs <Comp> out/<n>/video.mp4 1.3333333333333333` o con `npx remotion render ... --scale 1.3333333333333333`. Después une el audio con `-map 0:v:0 -map 1:a:0`. En el PC del usuario (RTX 5060) usa `REMOTION_GL=angle`. En un servidor sin GPU usa `swangle`, a unos 30 s por fotograma.
 10. **QA** con `python scripts/short_qa.py final.mp4 out/<n>/qa shots.json` y entrega.
 
 ## Lecciones del Vasa (prueba de estilo)
