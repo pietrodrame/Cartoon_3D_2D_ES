@@ -2,7 +2,7 @@
 
 Skill de Claude para hacer **shorts verticales de historia y curiosidades en español de España**, con el estilo de personajes 2D en un mundo 3D de colores: contornos de tinta, ciudad pintada, desenfoque de lente y cámaras que se deslizan. Todo se renderiza con three.js dentro de Remotion en tu propio PC, sin generadores de video con IA.
 
-Es una adaptación de [mromidev/claude-animated-shorts](https://github.com/mromidev/claude-animated-shorts) (MIT). Cambia el idioma, la voz (ElevenLabs), los tiempos por palabra (VoiceStudio) y el sonido, que pasa a ser con efectos reales de Openverse.
+Es una adaptación de [mromidev/claude-animated-shorts](https://github.com/mromidev/claude-animated-shorts) (MIT). Cambia el idioma, la voz (VoiceStudio), los tiempos por palabra (VoiceStudio) y el sonido, que pasa a ser con efectos reales de Openverse.
 
 ## Qué hay dentro
 | Ruta | Qué es |
@@ -35,7 +35,7 @@ Las imágenes de referencia del repo original (`references/frames`, `references/
 4. En Claude Code: *"Usa la skill de cartoon en español y haz un short sobre…"*
 
 ## Voz y sonido
-- **Voz:** la generas en ElevenLabs y la dejas en la carpeta `voice\` del short. Claude la usa tal cual y saca los tiempos por palabra con VoiceStudio (MCP en `localhost:3900`).
+- **Voz:** se genera en VoiceStudio con tu voz propia "voz españa mia" (MCP en `localhost:3900`), que también da los tiempos por palabra.
 - **Efectos y música:** reales, de [Openverse](https://openverse.org), solo con licencia CC0 o CC BY. Los créditos van en `sfx\CREDITOS_SFX.txt` y en la descripción del video.
 
 ## Licencia

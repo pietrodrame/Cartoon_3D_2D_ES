@@ -14,7 +14,7 @@ El motor visual es el mismo; cambian el idioma, la voz, los efectos de sonido y 
 
 ## Reglas del usuario
 - **Narración y textos en español de España** (castellano peninsular). Nunca acento latino.
-- **Voz:** el usuario genera la narración en **ElevenLabs** (voz "Javi Rojas") y pasa el mp3. Se usa tal cual. **Nunca clonar esa voz** en VoiceStudio ni en otra herramienta: es la voz de un actor de la Voice Library de ElevenLabs. Para publicar con monetización hace falta un plan de pago de ElevenLabs.
+- **Voz:** la voz propia del usuario en VoiceStudio, **"voz españa mia"** (MCP `voicestudio`, herramienta `generate_speech`, idioma `es`). No clonar voces de terceros (por ejemplo, voces de la Voice Library de ElevenLabs) ni de personas reales sin permiso.
 - **Tiempos por palabra (`words.json`):** se sacan con **VoiceStudio** (MCP `voicestudio`, herramienta `transcribe`, WhisperX), que corre en el PC del usuario en `http://localhost:3900`. Corrige a mano nombres que el transcriptor oye mal ("Elbasa" → "el Vasa"; v y b suenan igual).
 - **Carpeta de trabajo en el PC:** `C:\Users\monke\OneDrive\Documentos\HistoriaCartoon\<nombre-del-short>\` (`voice\`, `sfx\`, `out\`). No usar la carpeta "Que Pasaria Si", que es otro proyecto.
 - Los chistes son datos reales investigados. Hechos y fuentes arriba del todo en `SCRIPT.md`.
@@ -34,7 +34,7 @@ El motor visual es el mismo; cambian el idioma, la voz, los efectos de sonido y 
    - **Explicación:** una idea física con una analogía cotidiana (la copa con demasiado peso arriba).
    - **Consecuencia** y **giro final** que conecte con el gancho.
    - Escribe los años y cifras con letras si la voz los lee mal. Evita los puntos suspensivos dentro de una frase si el TTS se traba.
-3. **Voz.** El usuario genera la narración del guion en ElevenLabs y la deja en `voice\`. Conviértela a `voice.wav` (48 kHz) y saca `words.json` con VoiceStudio. Todo se sincroniza con `words.json`.
+3. **Voz.** Genera la narración con VoiceStudio y la voz "voz españa mia", guárdala como `voice\voice.wav` (48 kHz) y saca `words.json` con `transcribe`. Todo se sincroniza con `words.json`.
 4. **Plan de planos** en `story.ts` (bridge) o en `camAt`/`dofAt` (vasa): copia `templates/bridge/` (y `templates/vasa/` como ejemplo de escena nueva que reutiliza los módulos) a `src/videos/<nombre>/` y registra la composición en `src/Root.tsx`. Cada reacción visual cae 0-3 fotogramas antes de su palabra.
 5. **Mundo** (`lights.ts`, `shade.ts`, `build.ts`, `paint.ts`, `world.ts`) y **personajes** (`toon.ts`, `cast.ts`, `cardshade.ts`). Detalles y valores en `docs/SKILL_original_en.md`.
 6. **Post** (ink → lens pre → lens main → bloom → tone map NEUTRAL → grade, MSAA 4).
