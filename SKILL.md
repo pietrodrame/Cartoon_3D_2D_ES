@@ -9,14 +9,23 @@ Adaptación al español de [mromidev/claude-animated-shorts](https://github.com/
 El motor visual es el mismo; cambian el idioma, la voz, los efectos de sonido y algunas reglas.
 
 - Ejemplo original: *The Bridge That Fell for a Song* (`templates/bridge/`). Es la base de todos los módulos del look.
-- Ejemplo en español: **El Vasa (1628)**: prueba de estilo de 5 s en `templates/vasa/`, guion y plan en `examples/vasa/`.
+- Ejemplos en español:
+  - **El Vasa (1628)**: escena del puerto de Estocolmo en `templates/vasa/`, guion y plan de sonido en `examples/vasa/`.
+  - **Franco en un minuto**: short completo de 75 s con 13 planos y 9 decorados en `templates/franco/` (cortes en `CUTS` de `world.ts`), guion con hechos y fuentes en `examples/franco/`. Es el mejor modelo para un short nuevo con varios decorados.
 - Detalle técnico completo del look (valores medidos, gotchas, bucle de comparación): `docs/SKILL_original_en.md`. **Léelo antes de tocar luces, tinta, lente o personajes.**
+
+## Antes de empezar
+- Esta skill vive en `%USERPROFILE%\.claude\skills\cartoon-3d-short-es\` (clon del repo privado `github.com/pietrodrame/Cartoon_3D_2D_ES`). Si solo tienes este `SKILL.md` sin las carpetas `templates/`, `docs/` y `examples/`, clona el repo ahí antes de seguir.
+- El proyecto Remotion ya montado está en `C:\Users\monke\OneDrive\Documentos\HistoriaCartoon\remotion\`. Cada short nuevo va en `src\videos\<nombre>\` y se registra en `src\Root.tsx`.
+- Comprueba que VoiceStudio está abierto (`http://localhost:3900`) y que el MCP `voicestudio` aparece en `claude mcp list`.
+- En PowerShell usa `npm.cmd` y `npx.cmd` (la política de scripts bloquea `npm.ps1`).
 
 ## Reglas del usuario
 - **Narración y textos en español de España** (castellano peninsular). Nunca acento latino.
 - **Voz:** la voz propia del usuario en VoiceStudio, **"voz españa mia"** (MCP `voicestudio`, herramienta `generate_speech`, idioma `es`). No clonar voces de terceros (por ejemplo, voces de la Voice Library de ElevenLabs) ni de personas reales sin permiso.
 - **Tiempos por palabra (`words.json`):** se sacan con **VoiceStudio** (MCP `voicestudio`, herramienta `transcribe`, WhisperX), que corre en el PC del usuario en `http://localhost:3900`. Corrige a mano nombres que el transcriptor oye mal ("Elbasa" → "el Vasa"; v y b suenan igual).
 - **Carpeta de trabajo en el PC:** `C:\Users\monke\OneDrive\Documentos\HistoriaCartoon\<nombre-del-short>\` (`voice\`, `sfx\`, `out\`). No usar la carpeta "Que Pasaria Si", que es otro proyecto.
+- **Tono según el tema:** en temas serios (guerras, dictaduras, represión) narración neutral y rigurosa, sin chistes ni violencia explícita; el humor solo en lo anecdótico. Cifras de víctimas como las dan los historiadores ("decenas de miles"), con fuentes.
 - Los chistes son datos reales investigados. Hechos y fuentes arriba del todo en `SCRIPT.md`.
 - **Sin subtítulos** (el usuario los probó y los prefiere sin). Existe `templates/vasa/Captions.tsx` (palabra a palabra desde `public/<short>/words.json`), apagado por defecto; se activa con `--props={"captions":true}`.
 - Mezcla: voz sin tocar, música por debajo con *ducking*, efectos a -6 dB, máster a **-14 LUFS**.
@@ -39,14 +48,16 @@ El motor visual es el mismo; cambian el idioma, la voz, los efectos de sonido y 
 5. **Mundo** (`lights.ts`, `shade.ts`, `build.ts`, `paint.ts`, `world.ts`) y **personajes** (`toon.ts`, `cast.ts`, `cardshade.ts`). Detalles y valores en `docs/SKILL_original_en.md`.
 6. **Post** (ink → lens pre → lens main → bloom → tone map NEUTRAL → grade, MSAA 4).
 7. **Sonido real** (sustituye la síntesis del original):
-   - Busca efectos y música en **Openverse** (`https://api.openverse.org/v1/audio/?q=<búsqueda>&license=cc0` o `license_type=commercial`). No hace falta cuenta. **Solo CC0 o CC BY**, nunca NC ni ND.
+   - Se descargan en el PC del usuario (desde la nube el proxy bloquea Openverse). Busca efectos y música en **Openverse** (`https://api.openverse.org/v1/audio/?q=<búsqueda>&license=cc0` o `license_type=commercial`). No hace falta cuenta. **Solo CC0 o CC BY**, nunca NC ni ND.
+   - Openverse a veces da timeout: haz búsquedas cortas de una en una y, si falla, prueba Freesound (filtro CC0/CC BY) o Wikimedia Commons.
    - Guarda los archivos en `sfx\<categoría>\` y anota título, autor, licencia y URL en `sfx\CREDITOS_SFX.txt`. Los CC BY van en la descripción del video.
    - Coloca cada efecto en el fotograma exacto de su acción o palabra (ráfaga en "Llega una ráfaga", crujido en "se inclina", agua en "El agua entra").
    - Ambiente de fondo continuo (puerto, viento) y música baja con *ducking* bajo la voz.
    - Mezcla con ffmpeg. En el PC del usuario hay uno dentro de VoiceStudio: `C:\Users\monke\AppData\Roaming\VoiceStudio\runtime\project\.venv\Lib\site-packages\imageio_ffmpeg\binaries\ffmpeg-win-x86_64-v7.1.exe`. Normaliza el máster a -14 LUFS (`loudnorm=I=-14:TP=-1:LRA=11`).
    - Opcional: *earshot* (github.com/Leonxlnx/earshot) para que Claude "escuche" la mezcla. Revisa su código antes de instalarlo.
 8. **Revisión de imagen fotograma a fotograma.** Haz stills (`node scripts/stills.mjs <Comp> out/<n>/x_ 0,40,80 0.5`) y hojas de contacto con ffmpeg (`select='not(mod(n\,6))',tile=9x3`). Busca texturas sin sentido, saltos (movimiento a dos fotogramas que no toca) y objetos cortados en el borde. Corrige y repite.
-9. **Render final** con `node scripts/render.mjs <Comp> out/<n>/video.mp4 1.3333333333333333` o con `npx remotion render ... --scale 1.3333333333333333`. Después une el audio con `-map 0:v:0 -map 1:a:0`. En el PC del usuario (RTX 5060) usa `REMOTION_GL=angle`. En un servidor sin GPU usa `swangle`, a unos 30 s por fotograma.
+9. **Render final** con `node scripts/render.mjs <Comp> out/<n>/video.mp4 1.3333333333333333` o con `npx remotion render ... --scale 1.3333333333333333`. Después une el audio con `-map 0:v:0 -map 1:a:0`. En el PC del usuario (RTX 5060) usa `REMOTION_GL=angle`: unos 20 fps, un short de 75 s en 2K tarda menos de 2 minutos. En un servidor sin GPU usa `swangle`, a unos 30 s por fotograma. La escala tiene que ser exactamente `1.3333333333333333`: con `1.3333` sale 2559,9 px y Remotion lo rechaza.
+   Entrega dos archivos en `HistoriaCartoon\`: `<nombre>.mp4` (2K) y `<nombre>_movil.mp4` (1080x1920, más ligero para subir desde el móvil).
 10. **QA** con `python scripts/short_qa.py final.mp4 out/<n>/qa shots.json` y entrega.
 
 ## Lecciones del Vasa (prueba de estilo)
@@ -56,6 +67,12 @@ El motor visual es el mismo; cambian el idioma, la voz, los efectos de sonido y 
 - **Agua:** las crestas blancas al 0,2 como mucho. Más fuerte parece lluvia o rayas.
 - Formato vertical: un barco de lado no cabe. Gíralo unos 130° (popa hacia cámara) y aléjalo hasta unos 90 m.
 - Bandera de época: Suecia 1628 = azul con cruz amarilla.
+
+## Lecciones de Franco (short completo)
+- **Cortes por plano:** define `CUTS` (segundos de inicio de cada plano, sacados de `words.json`) y `shotOf(f)`; la cámara, el enfoque y la saturación de cada plano dependen de ese índice. Así un cambio de voz solo obliga a mover números.
+- **Carteles y letreros** (`signBoard`): el texto se encoge solo hasta caber en el ancho y el cartel entero tiene que verse en el plano. Revisa en los stills que no quede cortado por el borde.
+- **Paleta como narración:** grises y poca saturación en la posguerra, color pleno al llegar los sesenta (`satAt`).
+- Si falta un efecto concreto (aviones, marcha militar, playa), mejor ambiente genérico bien mezclado que un sonido que no encaja. Apunta lo que falta para la próxima vez.
 
 ## Disco y temporales
 Cada bundle de Remotion copia `public/` a la carpeta temporal. Usa `REMOTION_TMP` en un disco con espacio y borra los `remotion-webpack-bundle-*` antiguos al terminar un proyecto, preguntando antes al usuario.
